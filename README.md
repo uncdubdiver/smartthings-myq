@@ -12,7 +12,7 @@ Start by logging into to your SmartThings account
 1. Navigation, click on _My Device handlers_.
 2. Click on [+ Create new Device handler].
 3. Select the _From Code_ tab.
-4. Copy and paste in the code from the dbdevelopment-smartthings-myq_dth.txt file.
+4. Copy and paste in the code from the devicetypehandler.txt file.
 5. Click [Create].
 6. Once the page reloads, towards the top right corner, click [Save].
 7. Click [Publish] -> [For Me].
