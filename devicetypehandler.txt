@@ -1,0 +1,388 @@
+/**
+ *  Z-Wave Garage Door Opener
+ *
+ *  Copyright 2014 SmartThings
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at:
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+ *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing permissions and limitations under the License.
+ *
+ */
+metadata {
+	definition (
+    	name: "DB Dev - MyQ Garage Door Opener",
+        namespace: "dbdevelopment",
+        author: "Dean Berman - DB Development"
+    ) {
+		capability "Actuator"				//	Represents that a device has commands
+		capability "Door Control"			//	Allow control of a door
+        capability "Garage Door Control"	//	** Depretiated for Door Control - REQURED FOR ACTIONTILES TO RECOGNIZE IT
+		capability "Contact Sensor"		//	Allows reading the value of a contact sensor device - REQUIRED FOR ALEXA TO RECOGNIZE IT
+		capability "Refresh"				//	Allow the execution of the refresh command for devices that support it
+		capability "Sensor"					//	Represents that a device has attributes
+		capability "Health Check"			//	** Doesn't existing in the documentation - REQURED FOR ACTIONTILES TO RECOGNIZE IT
+	}
+
+	simulator {
+	}
+
+	tiles {
+		standardTile("toggle", "device.door", width: 2, height: 2) {
+			state("closed", label:'Closed', action:"open", icon:"st.doors.garage.garage-closed", backgroundColor:"#00A0DC", nextState:"opening")
+			state("open", label:'Open', action:"close", icon:"st.doors.garage.garage-open", backgroundColor:"#e86d13", nextState:"closing")
+			state("opening", label:'Opening', icon:"st.doors.garage.garage-closed", backgroundColor:"#e86d13")
+			state("closing", label:'Closing', icon:"st.doors.garage.garclosingage-open", backgroundColor:"#00A0DC")
+		}
+        standardTile("refresh", "refresh", inactiveLabel: false, decoration: "flat", width: 1, height: 1) {
+            //state("default", label: 'Refresh Btn', action:"refresh()", icon:"st.secondary.refresh")
+            state("default", label: 'Refresh Btn', action:"refresh", icon:"https://cdn1.iconfinder.com/data/icons/ui-glynh-02-of-5/100/UI_Glyph_03-18-512.png")
+        }
+		standardTile("open", "device.door", inactiveLabel: false, decoration: "flat") {
+			//state("default", label:'Open', action:"open()", icon:"st.doors.garage.garage-opening", nextState:"close")
+			state("default", label:'Open', action:"open", icon:"https://cdn4.iconfinder.com/data/icons/thin-smart-home-automation/24/thin_garage_opening-512.png", nextState:"close")
+		}
+		standardTile("close", "device.door", inactiveLabel: false, decoration: "flat") {
+			//state("default", label:'Close', action:"close()", icon:"st.doors.garage.garage-closing")
+			state("default", label:'Close', action:"close", icon:"https://cdn4.iconfinder.com/data/icons/thin-smart-home-automation/24/thin_garage_closing-512.png")
+		}
+
+		main "toggle"
+		details(["toggle", "refresh", "open", "close"])
+	}
+}
+
+
+preferences {
+	section("MyQ Account Login") {
+		// TODO: put inputs here
+        input("username", "email", title: "Username", description: "MyQ Username (email address)", required: true)
+        input("password", "password", title: "Password", description: "MyQ password", required: true)
+        //input("BaseURL", "input", title: "Base URL", description: "Web baseurl", required: true)
+        //input("APIAccessCode", "input", title: "API Access Code", description: "Encrypted API Access Code (string)", required: true)
+        //input("action", "input", title: "API Action", description: "Encrypted API Action (string)", required: true)
+	}
+}
+
+
+
+def myqApplicationId = ""
+def myqSecurityToken = ""
+def myqDeviceId = ""
+def myqDeviceTypeId = ""
+def myqDoorState = "closed"
+
+
+def set_myqApplicationId(id) {
+	state.myqApplicationId = id
+}
+def set_myqSecurityToken(id) {
+	state.myqSecurityToken = id
+}
+def set_myqDeviceId(id) {
+	state.myqDeviceId = id
+}
+def set_myqDeviceTypeId(id) {
+	state.myqDeviceTypeId = id
+}
+def set_myqDoorState(setState) {
+	state.myqDoorState = ((setState == '1') ? 'open' : 'closed')
+}
+
+
+def get_myqURL() {
+	return "https://myqexternal.myqdevice.com"
+}
+def get_myqURLAPIVerify() {
+	return "/api/v4/User/Validate"
+}
+def get_myqURLAPIGetStatus() {
+	return "/api/v4/UserDeviceDetails/Get"
+}
+def get_myqURLAPISendCommand() {
+	return "/api/v4/DeviceAttribute/PutDeviceAttribute"
+}
+def get_myqApplicationId() {
+	return "NWknvuBd7LoFHfXmKNMBcgajXtZEgKUh4V7WNzMidrpUUluDpVYVZx+xT4PCM5Kx"
+	//return state.myqApplicationId
+}
+
+def get_myqSecurityToken() {
+	return state.myqSecurityToken
+}
+def get_myqDeviceId() {
+	return state.myqDeviceId
+}
+def get_myqDeviceTypeId() {
+	return state.myqDeviceTypeId
+}
+def get_myqDoorState() {
+	return state.myqDoorState
+}
+
+def parse(String description) {
+	log.trace "parse($description)"
+}
+
+def refresh() {
+	log.debug "Running refresh() method..."
+    
+    def verify
+    
+    verify = checkCredentials()
+    if(!verify) {
+    	log.error "-refresh() - ERROR - verifying credentials - unable to verify myq information - please fix and try again"
+        
+    } else {
+    	//	Credentials verified, time to get the door state...
+    	log.debug "-refresh() - SUCCESS - verifying credentials - returned a TRUE response that the user is already logged in...continuing..."
+        
+        checkState()
+    }
+    
+    
+    if(get_myqDoorState() == 'open') {
+    	sendEvent(name: "door", value: "open", isStateChange: true, display: true, displayed: true)
+    } else if(get_myqDoorState() == 'closed') {
+    	sendEvent(name: "door", value: "closed", isStateChange: true, display: true, displayed: true)
+    }
+    
+    runIn(180, refresh);
+}
+
+def checkCredentials() {
+	log.debug "Running checkCredentials() method..."
+    
+    def verify
+    
+    //	If we have a SecurityToken and a myqDeviceId an a myqDeviceTypeId, then we don't need to re-check the credentials...
+    //if(get_myqSecurityToken() != null && get_myqDeviceId() != null && get_myqDeviceTypeId() != null) {
+    if(false) {
+    	log.debug "-checkCredentials() - SUCCESS - "+get_myqSecurityToken()+" != null && "+get_myqDeviceId()+" != null && "+get_myqDeviceTypeId()+" != null...continuing..."
+        
+    	verify = true
+    } else {
+        //	Checking to make sure the user credentials are valid...
+        log.debug "-checkCredentials() - WARNING - no SecurityToken or myqDeviceId or myqDeviceTypeId, so doing a new verifyCredentials check..."
+        
+        verify = callURL('POST', 'verifyCredentials', get_myqURL(), get_myqURLAPIVerify(), ['MyQApplicationId': get_myqApplicationId()], [username: settings.username, password: settings.password], null)
+        
+        if(verify) {
+        	log.debug "--checkCredentials() - SUCCESS - credentials have been verified..."
+        } else {
+        	log.error "--checkCredentials() - ERROR - unable to verify credentials...please fix and try again"
+        }
+    }
+    
+    return verify
+}
+
+def checkState() {
+	log.debug "Running checkState() method..."
+    
+    def curState
+    
+    //	Check the current state of the door...
+    curState = callURL('GET', 'checkState', get_myqURL(), get_myqURLAPIGetStatus(), ['MyQApplicationId': get_myqApplicationId(), 'SecurityToken': get_myqSecurityToken()], null, null)
+    
+    if(!curState) {
+    	//	Something happened, we were unable to get the door state...
+        log.error "-checkState() - ERROR - getting current door state - unable to determine the doors current state (open or closed) - please fix and try again"
+    } else {
+    	//	Door state is either open or close, return accordingly...
+        log.debug "-checkState() - SUCCESS - returned the following doorstate: " + get_myqDoorState()
+        
+        return true
+    }
+}
+
+def open() {
+	log.debug "Running open() method..."
+	sendEvent(name: "door", value: "opening", isStateChange: true, display: true, displayed: true)
+	callURL('PUT', 'open', get_myqURL(), get_myqURLAPISendCommand(), ['MyQApplicationId': get_myqApplicationId(), 'SecurityToken': get_myqSecurityToken()], ['MyQDeviceId': get_myqDeviceId(), 'AttributeName': 'desireddoorstate', 'AttributeValue': '1'], null)
+    runIn(20, finishOpening)
+    //runIn(20, refresh)
+}
+
+def close() {
+	log.debug "Running close() method..."
+    sendEvent(name: "door", value: "closing", isStateChange: true, display: true, displayed: true)
+	callURL('PUT', 'close', get_myqURL(), get_myqURLAPISendCommand(), ['MyQApplicationId': get_myqApplicationId(), 'SecurityToken': get_myqSecurityToken()], ['MyQDeviceId': get_myqDeviceId(), 'AttributeName': 'desireddoorstate', 'AttributeValue': '0'], null)
+	runIn(60, finishClosing)
+	//runIn(45, refresh)
+}
+
+def finishOpening() {
+	log.debug "- Running finishOpening() method..."
+    //sendEvent(name: "door", value: "open")
+    refresh()
+}
+
+def finishClosing() {
+	log.debug "- Running finishClosing() method..."
+    //sendEvent(name: "door", value: "closed")
+    refresh()
+}
+
+def installed() {
+	//log.trace "Executing 'installed'"
+    log.debug "Running installed() method..."
+	initialize()
+}
+
+def updated() {
+	//log.trace "Executing 'updated'"
+    log.debug "Running updated() method..."
+	initialize()
+}
+
+private initialize() {
+	//log.trace "Executing 'initialize'"
+    log.debug "Running initialize() method..."
+    refresh()
+
+	sendEvent(name: "DeviceWatch-DeviceStatus", value: "online")
+	sendEvent(name: "healthStatus", value: "online")
+	sendEvent(name: "DeviceWatch-Enroll", value: [protocol: "cloud", scheme:"untracked"].encodeAsJson(), displayed: false)
+}
+
+def callURL(method, option, URI, path, headersArray, bodyArray, queryArray) {
+	log.debug "- Running my callURL("+option+") method..."
+    def params
+    
+	params = [
+		method: method,
+		uri     : URI,
+		path    : path,
+		body    : bodyArray,
+		headers : headersArray,
+		query   : queryArray,
+	]
+    
+    //log.debug "PARAMS="
+    //log.debug params
+    //log.debug "------------"
+	
+    //changed to httpPost
+    if(method == 'POST') {
+        try {
+            httpPost(params) { resp ->
+                //log debug "RESP="
+                //log.debug "HEADERS="+resp.headers
+//                log.debug "DATA="+resp.data
+                //log.debug "Current DoorState="+resp.data.doorstate
+				
+                if(option == 'verifyCredentials') {
+                    set_myqSecurityToken(resp.data.SecurityToken)
+
+                    log.debug "ST="+get_myqSecurityToken()
+
+                    if(get_myqSecurityToken() != null) {
+                   		//set_myqLoggedInDate()
+                        
+                        return true
+                    } else {
+                        return false
+                    }
+                }
+                //return resp.data.doorstate
+            }
+        } catch (groovyx.net.http.HttpResponseException e) {
+            log.error "callURL() >> POST >> Error: e.statusCode ${e.statusCode}"
+
+            return 'unknown'
+        }
+        
+    } else if(method == 'GET') {
+        //log.debug "PARAMS="
+        //log.debug params
+        //log.debug "------------"
+        
+        try {
+            httpGet(params) { resp ->
+                set_myqDeviceId(resp.data.Devices[0]['MyQDeviceId'])
+                set_myqDeviceTypeId(resp.data.Devices[0]['MyQDeviceTypeId'])
+				
+//                log.debug "DID="+get_myqDeviceId()
+//                log.debug "DTID="+get_myqDeviceTypeId()
+                
+                if(option == 'checkState') {
+                    //	Other option...
+                    //log.debug resp.data.Devices
+                    if(get_myqDeviceId() != null && get_myqDeviceTypeId() != null) {
+                    	//	Now that we have the information set properly, time to check and save the door state...
+                        def attributes = resp.data.Devices[0]['Attributes']
+//                        log.error attributes
+                        
+                        //	Now to loop through the results and find the doorstate field...
+                        attributes.each {
+                        	//log.debug "ATT="+it.AttributeDisplayName
+                            if(it.AttributeDisplayName == 'doorstate') {
+                            	set_myqDoorState(it.Value)
+                                return true
+                            }
+                        }
+                        
+                    	return true
+                    } else {
+                    	return false
+                    }
+                }
+                //return resp.data.doorstate
+            }
+        } catch (groovyx.net.http.HttpResponseException e) {
+            log.error "callURL() >> GET >> Error: e.statusCode ${e.statusCode}"
+
+            return 'unknown'
+        }
+        
+    } else if(method == 'PUT') {
+        //log.debug "PARAMS="
+        //log.debug params
+        //log.debug "------------"
+        
+        try {
+            httpPut(params) { resp ->
+				log.debug resp.data
+				return true
+                set_myqDeviceId(resp.data.Devices[0]['MyQDeviceId'])
+                set_myqDeviceTypeId(resp.data.Devices[0]['MyQDeviceTypeId'])
+				
+//                log.debug "DID="+get_myqDeviceId()
+//                log.debug "DTID="+get_myqDeviceTypeId()
+                
+                if(option == 'checkState') {
+                    //	Other option...
+                    //log.debug resp.data.Devices
+                    if(get_myqDeviceId() != null && get_myqDeviceTypeId() != null) {
+                    	//	Now that we have the information set properly, time to check and save the door state...
+                        def attributes = resp.data.Devices[0]['Attributes']
+//                        log.error attributes
+                        
+                        //	Now to loop through the results and find the doorstate field...
+                        attributes.each {
+                        	//log.debug "ATT="+it.AttributeDisplayName
+                            if(it.AttributeDisplayName == 'doorstate') {
+                            	set_myqDoorState(it.Value)
+                                return true
+                            }
+                        }
+                        
+                    	return true
+                    } else {
+                    	return false
+                    }
+                }
+                //return resp.data.doorstate
+            }
+        } catch (groovyx.net.http.HttpResponseException e) {
+            log.error "callURL() >> GET >> Error: e.statusCode ${e.statusCode}"
+
+            return 'unknown'
+        }
+    }
+}
