@@ -8,11 +8,17 @@ Must have a MyQ account setup (https://myqchamberlain.com)
 ### To integrate this into SmartThings, you'll follow these steps:
 Start by logging into to your SmartThings account
 
+### 2 AVAILABLE OPTIONS
+- Device Type Handler: recognizes as a DOOR
+- Device Type handler: recognizes as a SWITCH (this works with Alexa voice commands and routines - 2019-12-08)
+
 ### 1. My Device Handlers
 1. Navigation, click on _My Device handlers_.
 2. Click on [+ Create new Device handler].
 3. Select the _From Code_ tab.
-4. Copy and paste in the code from the devicetypehandler.txt file.
+  - **DOOR DTH**  - devicetypehandler-door.txt
+  - **SWITCH DTH**  - devicetypehandler-switch.txt
+4. Copy and paste in the code from the selected file.
 5. Click [Create].
 6. Once the page reloads, towards the top right corner, click [Save].
 7. Click [Publish] -> [For Me].
@@ -21,15 +27,15 @@ Start by logging into to your SmartThings account
 1. Navigation, click on _My Devices_.
 2. Click [+ New Device].
 3. Create the new device as such:
-- Name: MyQ Garage Door Opener
-- Label: MyQ Garage Door Opener
-- Zigbee Id: <blank>
-- Device network Id: myq01
-- Type: DB Dev - MyQ Garage Door Opener
-- Version: Published
-- Location: Home
-- Hub: SmartThings Hub
-- Group: <blank>
+  - Name: MyQ Garage Door Opener
+  - Label: MyQ Garage Door Opener
+  - Zigbee Id: <blank>
+  - Device network Id: myq01
+  - Type: DB Dev - MyQ Garage Door Opener
+  - Version: Published
+  - Location: Home
+  - Hub: SmartThings Hub
+  - Group: <blank>
 4. Then click [Create].
 5. Once the page reloads, scroll down to the Preferences row and click [edit].
 6. Populate your MyQ Username/Email Address and MyQ Password, then click [Save].
