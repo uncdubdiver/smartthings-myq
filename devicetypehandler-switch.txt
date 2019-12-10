@@ -25,6 +25,7 @@ metadata {
 		capability "Refresh"				//	Allow the execution of the refresh command for devices that support it
 		capability "Sensor"					//	Represents that a device has attributes
 		capability "Health Check"			//	** Doesn't existing in the documentation - REQURED FOR ACTIONTILES TO RECOGNIZE IT
+		capability "Polling"				//	Required to allow for the switch to ping/poll for status changes
 	}
 
 	simulator {
@@ -119,6 +120,14 @@ def get_myqDoorState() {
 
 def parse(String description) {
 	log.trace "parse($description)"
+}
+
+def poll() {
+	refresh()
+}
+
+def ping() {
+	refresh()
 }
 
 def refresh() {
