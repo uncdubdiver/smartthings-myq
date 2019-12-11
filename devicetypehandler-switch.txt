@@ -148,16 +148,19 @@ def refresh() {
     
     
     if(get_myqDoorState() == 'open') {
+    	log.debug "STATUS: Switch Event set to ON (aka OPEN)"
     	sendEvent(name: "switch", value: "on", isStateChange: true, display: true, displayed: true)
     } else if(get_myqDoorState() == 'closed') {
+    	log.debug "STATUS: Switch Event set to OFF (aka CLOSED)"
     	sendEvent(name: "switch", value: "off", isStateChange: true, display: true, displayed: true)
     }
     
-    runIn(180, refresh);
+    runIn(120, refresh);
+    //runEvery5Minutes(refresh)
 }
 
 def checkCredentials() {
-	log.debug "Running checkCredentials() method..."
+	log.trace "Running checkCredentials() method..."
     
     def verify
     
@@ -183,7 +186,7 @@ def checkCredentials() {
 }
 
 def checkState() {
-	log.debug "Running checkState() method..."
+	log.trace "Running checkState() method..."
     
     def curState
     
@@ -202,43 +205,48 @@ def checkState() {
 }
 
 def on() {
-	log.debug "Running on() method..."
+	log.trace "Running on() method..."
 	sendEvent(name: "switch", value: "on", isStateChange: true, display: true, displayed: true)
 	callURL('PUT', 'open', get_myqURL(), get_myqURLAPISendCommand(), ['MyQApplicationId': get_myqApplicationId(), 'SecurityToken': get_myqSecurityToken()], ['MyQDeviceId': get_myqDeviceId(), 'AttributeName': 'desireddoorstate', 'AttributeValue': '1'], null)
     runIn(20, finishOpening)
 }
 
 def off() {
-	log.debug "Running off() method..."
+	log.trace "Running off() method..."
     sendEvent(name: "switch", value: "off", isStateChange: true, display: true, displayed: true)
 	callURL('PUT', 'close', get_myqURL(), get_myqURLAPISendCommand(), ['MyQApplicationId': get_myqApplicationId(), 'SecurityToken': get_myqSecurityToken()], ['MyQDeviceId': get_myqDeviceId(), 'AttributeName': 'desireddoorstate', 'AttributeValue': '0'], null)
 	runIn(60, finishClosing)
 }
 
 def finishOpening() {
-	log.debug "- Running finishOpening() method..."
+	log.trace "- Running finishOpening() method..."
     refresh()
 }
 
 def finishClosing() {
-	log.debug "- Running finishClosing() method..."
+	log.trace "- Running finishClosing() method..."
     refresh()
 }
 
 def installed() {
-	//log.trace "Executing 'installed'"
+	log.trace "Executing 'installed'"
     log.debug "Running installed() method..."
 	initialize()
+    
+    runIn(120, refresh)
 }
 
 def updated() {
-	//log.trace "Executing 'updated'"
+	log.trace "Executing 'updated'"
     log.debug "Running updated() method..."
 	initialize()
+    
+    runIn(120, refresh)
+    //runEvery5Minutes(refresh)
 }
 
 private initialize() {
-	//log.trace "Executing 'initialize'"
+	log.trace "Executing 'initialize'"
     log.debug "Running initialize() method..."
     refresh()
 
@@ -248,7 +256,7 @@ private initialize() {
 }
 
 def callURL(method, option, URI, path, headersArray, bodyArray, queryArray) {
-	log.debug "- Running my callURL("+option+") method..."
+	log.trace "- Running my callURL("+option+") method..."
     def params
     
 	params = [
