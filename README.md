@@ -1,5 +1,5 @@
-# dbdevelopment-smartthings-myq
-My personal setup for the MyQ garage door opener integration for SmartThings
+# smartthings-myq
+Device Type Handler for the MyQ garage door opener integration for SmartThings
 
 ### Pre-requisites
 Must have a Samsung SmartThings account setup (https://account.smartthings.com)
@@ -42,7 +42,7 @@ Start by logging into to your SmartThings account
 
 ### Test MyQ Device Setup
 1. Navigation, click on _My Device Handlers_.
-2. Click on _dbdevelopment : DB Dev - MyQ Garage Door Opener_.
+2. Click on _MyQ Garage Door Opener_.
 3. On the top right side, click [Simulator <].
 4. For Location, select _Home_, then click [Set Location].
 5. For Preferences, for Choose a device to test with, select _MyQ Garage Door Opener_, then click [Install].
