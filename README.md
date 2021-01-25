@@ -10,14 +10,14 @@ Start by logging into to your SmartThings account
 
 ### 2 AVAILABLE OPTIONS
 - Device Type Handler: recognizes as a DOOR
-- Device Type handler: recognizes as a SWITCH (this works with Alexa voice commands and routines - 2019-12-08)
+- Device Type handler: recognizes as a SWITCH (this works with Alexa voice commands and routines - 2019-12-08, OBSOLETE AS OF 2021-01-25)
 
 ### 1. My Device Handlers
 1. Navigation, click on _My Device handlers_.
 2. Click on [+ Create new Device handler].
 3. Select the _From Code_ tab.
   - **DOOR DTH**  - devicetypehandler-door.txt
-  - **SWITCH DTH**  - devicetypehandler-switch.txt
+  - **SWITCH DTH**  - devicetypehandler-switch.txt (OBSOLETE AS OF 2021-01-25)
 4. Copy and paste in the code from the selected file.
 5. Click [Create].
 6. Once the page reloads, towards the top right corner, click [Save].
