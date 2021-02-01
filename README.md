@@ -16,8 +16,8 @@ Start by logging into to your SmartThings account
 1. Navigation, click on _My Device handlers_.
 2. Click on [+ Create new Device handler].
 3. Select the _From Code_ tab.
-  - **DOOR DTH**  - devicetypehandler-door.txt
-  - **SWITCH DTH**  - devicetypehandler-switch.txt (OBSOLETE AS OF 2021-01-25)
+  - **DOOR DTH**  - devicetypehandler-myq.groovy
+  - **SWITCH DTH**  - devicetypehandler-switch.groovy (OBSOLETE AS OF 2021-01-25)
 4. Copy and paste in the code from the selected file.
 5. Click [Create].
 6. Once the page reloads, towards the top right corner, click [Save].
@@ -53,6 +53,14 @@ Start by logging into to your SmartThings account
 - Health Check: [ping]: option which is setup ActionTiles to work properly
 - Raw: comment window: nothing to do here
 If all of your tests work properly above, then you should be GTG to add this to your SmartThings app.
+
+### DEBUGGING/TROUBLESHOOTING
+If you edit the device type handler in your SmartThings environment, search for the "refresh()" function and enable debugging by setting the following:  
+```groovy
+set_DEBUG("off")
+...to...
+set_DEBUG("on")
+```
 
 ### DISCLOSURE
 I am not SmartThings developer, I just did this because I couldn't get the other (way more advanced) MyQ garage door opener SmartApp that's out there to work with my system, so I created one myself.  It works well for me and this isn't for sale, so feel free to use it, tweak it, whatever you want!
