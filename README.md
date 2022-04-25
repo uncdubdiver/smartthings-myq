@@ -3,7 +3,7 @@ Device Type Handler for the MyQ garage door opener integration for SmartThings
 
 ### Pre-requisites
 Must have a Samsung SmartThings account setup (https://account.smartthings.com)
-Must have a MyQ account setup (https://myqchamberlain.com)
+Must have a MyQ account setup (https://myq.com)
 
 ### To integrate this into SmartThings, you'll follow these steps:
 Start by logging into to your SmartThings account
